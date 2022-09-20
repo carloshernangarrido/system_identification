@@ -1,4 +1,5 @@
 import pickle
+from typing import List
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -37,7 +38,7 @@ def get_responses(responses_full_filenames, generate_referenceframe, remove_mean
     return t[0:-2], responses
 
 
-def plot_responses(t, responses):
+def plot_responses(t: np.ndarray, responses: List[np.ndarray]):
     fig, axs = plt.subplots(len(responses), 3, sharex='all')
     for i, response in enumerate(responses):
         axs[i, 0].set_ylabel(f'DOF {i}')
