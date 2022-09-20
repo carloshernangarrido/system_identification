@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from lumped_mass_sysid import get_ab_mats
+from lumped_mass_sysid import get_ab_mats, get_ab_mats_assembly
 from utils import get_responses, plot_responses
 import matplotlib.pyplot as plt
 
@@ -36,4 +36,6 @@ if __name__ == '__main__':
     a_mat, b_mat, dof = get_ab_mats(responses, parameters, 2, ret_dof=True)
     gamma_mat = np.dot(np.linalg.pinv(a_mat), b_mat)
     print(gamma_mat, dof)
+
+    ab_mats = get_ab_mats_assembly(responses, parameters, [0, 1, 2])
 pass

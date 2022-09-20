@@ -1,3 +1,4 @@
+import itertools
 from typing import List, Union
 
 import numpy as np
@@ -80,3 +81,29 @@ def get_ab_mats(responses: List[np.ndarray], parameters: dict, dof_index: int, r
     a_mat = np.hstack(a_columns)
     return (a_mat, b_mat) if ret_dof is False else (a_mat, b_mat, dof)
 
+
+def get_ab_mats_assembly(responses: List[np.ndarray], parameters: dict, dof_indexes: List[int]):
+    ab_mats = []
+    for dof_index in dof_indexes:
+        ab_mats.append(get_ab_mats(responses, parameters, dof_index, ret_dof=True))
+
+    a_mat_assembly, b_mat_assembly, dof_assembly = get_ab_mats(responses, parameters, 0, ret_dof=True)
+    print(dof_assembly)
+    for dof_index in dof_indexes[1:]:
+        a_mat_next, b_mat_next, dof_next = get_ab_mats(responses, parameters, dof_index, ret_dof=True)
+        b_mat_assembly = np.vstack((b_mat_assembly, b_mat_next))
+        print(dof_next)
+        for i_element_next, element_next in enumerate(dof_next.elements):
+            for i_element, element in enumerate(dof_assembly.elements):
+                if element_next.is_same_as(element):
+                    print(element, 'is the same as', element_next)
+
+    # # check for repeated parameters
+    # pairs_ab_mat = []
+    # for pair_ab_mat in itertools.combinations(ab_mats, 2):
+    #     print('')
+    #     print(pair_ab_mat[0][2].elements, pair_ab_mat[1][2].elements)
+    #     pairs_ab_mat.append(pair_ab_mat)
+    #     # for element in ab_mat[2].elements:
+    #     #     print(element.is_same_as())
+    # return pairs_ab_mat
