@@ -38,6 +38,34 @@ def get_responses(responses_full_filenames, generate_referenceframe, remove_mean
     return t[0:-2], responses
 
 
+def check_responses_integrity(responses, t=None):
+    def is_1d_ndarray(arr):
+        return True if (isinstance(arr, np.ndarray) and len(arr.shape) == 1) else False
+
+    if t is None:
+        n_samples = responses[0]['x'].shape[0]
+    else:
+        assert is_1d_ndarray(t), 't must be 1D ndarray'
+        n_samples = t.shape[0]
+
+    for response in responses:
+        assert isinstance(response, dict), 'each response must be a dict of 1D ndarray'
+        has_x, has_x_dot, has_x_ddot = False, False, False
+        for key in response.keys():
+            if key == 'x':
+                has_x = True
+            elif key == 'x_dot':
+                has_x_dot = True
+            elif key == 'x_ddot':
+                has_x_ddot = True
+            else:
+                raise AssertionError('response keys must be x, x_dot or x_ddot')
+            assert is_1d_ndarray(response[key]), 'Each element of response must be 1D ndarray'
+            assert response[key].shape[0] == n_samples, 'Each element of response must have the n_samples as t'
+        assert has_x and has_x_dot and has_x_ddot, 'response must have x, x_dot and x_ddot'
+    return n_samples
+
+
 def plot_responses(t: np.ndarray, responses: List[np.ndarray]):
     fig, axs = plt.subplots(len(responses), 3, sharex='all')
     for i, response in enumerate(responses):
@@ -50,3 +78,21 @@ def plot_responses(t: np.ndarray, responses: List[np.ndarray]):
         axs[i, 2].set_title('acceleration (m/s2)')
     plt.show()
     return fig, axs
+
+
+def get_mck_mats(parameters):
+    m_1 = parameters['known']['m_1']
+    m_2 = parameters['known']['m_2']
+    m_mat = np.array([[m_1, 0],
+                     [0, m_2]])
+    c_0_1 = parameters['unknown']['c_0_1']
+    c_0_2 = parameters['unknown']['c_0_2'] if 'c_0_2' in parameters['unknown'].keys() else 0
+    c_1_2 = parameters['unknown']['c_1_2']
+    c_mat = np.array([[c_0_1+c_1_2, -c_1_2],
+                      [-c_1_2, c_1_2+c_0_2]])
+    k_0_1 = parameters['unknown']['k_0_1']
+    k_0_2 = parameters['unknown']['k_0_2'] if 'k_0_2' in parameters['unknown'].keys() else 0
+    k_1_2 = parameters['unknown']['k_1_2']
+    k_mat = np.array([[k_0_1+k_1_2, -k_1_2],
+                      [-k_1_2, k_1_2+k_0_2]])
+    return m_mat, c_mat, k_mat
