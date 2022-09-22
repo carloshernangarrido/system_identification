@@ -15,16 +15,16 @@ def t2delta_t(t):
     return delta_t
 
 
-def get_responses(responses_full_filenames, generate_referenceframe, remove_mean):
+def get_responses(responses_full_filenames, generate_referenceframe, remove_mean, i_ini=0, i_fin=None):
     responses = []
     t, delta_t = None, None
     for full_filename in responses_full_filenames:
         with open(full_filename, 'rb') as file:
             saving_list = pickle.load(file)
             txy_smoothed = saving_list[2]
-        t = txy_smoothed[:, 0] if t is None else t
+        t = txy_smoothed[i_ini:i_fin, 0] if t is None else t
         delta_t = t2delta_t(t) if delta_t is None else delta_t
-        x = txy_smoothed[:, 1] - txy_smoothed[:, 1].mean() if remove_mean else txy_smoothed[:, 1]
+        x = txy_smoothed[i_ini:i_fin, 1] - txy_smoothed[i_ini:i_fin, 1].mean() if remove_mean else txy_smoothed[i_ini:i_fin, 1]
         x = x.copy()
         if generate_referenceframe:
             zeros = np.zeros(x[0:-2].size)
@@ -76,7 +76,6 @@ def plot_responses(t: np.ndarray, responses: List[np.ndarray]):
         axs[i, 1].set_title('velocity (m/s)')
         axs[i, 2].plot(t, response['x_ddot'])
         axs[i, 2].set_title('acceleration (m/s2)')
-    plt.show()
     return fig, axs
 
 

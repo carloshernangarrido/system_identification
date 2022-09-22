@@ -100,18 +100,14 @@ def get_ab_mats_assembly(responses: List[np.ndarray], parameters: dict, dof_inde
         a_mat_next, b_mat_next, dof_next = get_ab_mats(responses, parameters, dof_index)
         b_mat_assembly = np.vstack((b_mat_assembly, b_mat_next))
         a_mat_assembly = np.vstack((a_mat_assembly, np.zeros((n_samples, a_mat_assembly.shape[1]))))
-        # print(dof_next)
         for i_element_next, element_next in enumerate(dof_next.elements):
-            # print(f'elements_assembly={[_.__str__() for _ in elements_assembly]}, {a_mat_assembly=}')
             is_present = False
             for i_element, element in enumerate(elements_assembly):
                 if element_next.is_same_as(element):
-                    # print(element_next, 'is the same as', element)
                     a_mat_assembly[-n_samples:, i_element] = a_mat_next[:, i_element_next]
                     is_present = True
                     break
             if not is_present:
-                # print(element_next, 'is none of', [_.__str__() for _ in elements_assembly])
                 a_mat_assembly = np.hstack((a_mat_assembly, np.zeros((n_samples*(1+i_dof), 1))))
                 a_mat_assembly[-n_samples:, -1] = a_mat_next[:, i_element_next]
                 elements_assembly.append(element_next)
@@ -123,6 +119,6 @@ def get_ab_mats_assembly(responses: List[np.ndarray], parameters: dict, dof_inde
                 par_result_assembly['unknown'][element.__str__()] = gamma_mat_assembly[i_element, 0]
             else:
                 par_result_assembly['unknown'][element.__str__(ji=True)] = gamma_mat_assembly[i_element, 0]
-        return a_mat_assembly, b_mat_assembly, elements_assembly, par_result_assembly
+        return a_mat_assembly, b_mat_assembly, elements_assembly, gamma_mat_assembly, par_result_assembly
     else:
         return a_mat_assembly, b_mat_assembly, elements_assembly
