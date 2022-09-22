@@ -1,0 +1,1 @@
+This App reads dynamic responses and fit the parameters of a lumped-mass dynamic structural system. The structure is formed by known masses conected by unknown springs, dampers and inerters.

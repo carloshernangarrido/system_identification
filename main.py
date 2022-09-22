@@ -1,41 +1,33 @@
 import os
-
 import numpy as np
-
-from lumped_mass_sysid import get_ab_mats, get_ab_mats_assembly
-from utils import get_responses, plot_responses, get_mck_mats
+from lumped_mass_sysid import get_ab_mats_assembly
+from plots import plot_residuals, plot_responses
+from utils import get_responses, get_mck_mats, Parameters
 import matplotlib.pyplot as plt
 
 path = r''
 response_filenames = ['txy_dof1_m.dat',
                       'txy_dof2_m.dat']
 responses_full_filenames = [os.path.join(path, response_filename) for response_filename in response_filenames]
+flags = {'remove_mean': True,
+         'fully_connected_k': False,
+         'chain_like_k': True,
+         'fully_connected_c': True,
+         'chain_like_c': False,
+         'fully_connected_b': False,
+         'chain_like_b': False}
 
 steel_dens = 7800
 floor_vol = 3099962 / (1000 ** 3)
 columns_vol = 318713 / (1000 ** 3)
+dof_masses = [steel_dens * (floor_vol + columns_vol), steel_dens * (floor_vol + (0.5 * columns_vol))]
 
-flag_fully_conected = False
-if flag_fully_conected:
-    parameters = {'known': {'m_1': steel_dens * (floor_vol + columns_vol),
-                            'm_2': steel_dens * (floor_vol + (0.5 * columns_vol))},
-                  'unknown': {'k_0_1': 0.0,
-                              'c_0_1': 0.0,
-                              'k_1_2': 0.0,
-                              'c_1_2': 0.0,
-                              'c_0_2': 0.0,
-                              'k_0_2': 0.0}}
-else:
-    parameters = {'known': {'m_1': steel_dens * (floor_vol + columns_vol),
-                            'm_2': steel_dens * (floor_vol + (0.5 * columns_vol))},
-                  'unknown': {'k_0_1': 0.0,
-                              'c_0_1': 0.0,
-                              'k_1_2': 0.0,
-                              'c_1_2': 0.0,
-                              'c_0_2': 0.0, }}
+parameters = Parameters(dof_masses=dof_masses,
+                        fully_connected_k=flags['fully_connected_k'], chain_like_k=flags['chain_like_k'],
+                        fully_connected_c=flags['fully_connected_c'], chain_like_c=flags['chain_like_c'],
+                        fully_connected_b=flags['fully_connected_b'], chain_like_b=flags['chain_like_b']).parameters
 
-flags = {'remove_mean': True,
-         }
+print(parameters)
 
 if __name__ == '__main__':
     #  Read responses assumed as positions
@@ -56,17 +48,10 @@ if __name__ == '__main__':
     print(f" alpha damping = {c_mat / m_mat}")
     print(f" beta damping = {c_mat / k_mat}")
 
-    # Residuals
-    force_sum = np.dot(a_mat, gamma_mat).reshape((-1,))
-    inertia_term = b_mat.reshape((-1,))
-    fig, axs = plt.subplots(len(dofs_indices), 1, sharex='all')
-    for i in range(len(dofs_indices)):
-        axs[i].plot(t, force_sum[i * len(t):(i + 1) * len(t)], label='sum of forces')
-        axs[i].plot(t, inertia_term[i * len(t):(i + 1) * len(t)], label='inertial term')
-        axs[i].set_ylabel(f'force (N) on DOF {dofs_indices[i]}')
-        axs[i].plot(t, (force_sum - inertia_term)[i * len(t):(i + 1) * len(t)], label='error')
-        axs[i].set_xlabel('time (s)')
+    # Plot residuals
+    plot_residuals(force_sum=np.dot(a_mat, gamma_mat).reshape((-1,)), inertia_term=b_mat.reshape((-1,)),
+                   dofs_indices=[1, 2], t=t)
     plt.show()
 
     # Simulation
-...
+    ...  # TODO

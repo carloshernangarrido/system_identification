@@ -1,7 +1,6 @@
-import itertools
-from typing import List, Union
+from typing import List
 import numpy as np
-from utils import check_responses_integrity
+from utils import check_responses_integrity, check_element_type
 
 
 class Element:
@@ -67,6 +66,7 @@ def get_ab_mats(responses: List[np.ndarray], parameters: dict, dof_index: int, s
     b_mat = - dof.mass * responses[dof_index]['x_ddot'].reshape((-1, 1))
     a_columns = []
     for element in dof.elements:
+        check_element_type(element.element_type)
         assert dof.index == element.i
         if element.element_type == 'k':
             a_columns.append(responses[dof.index]['x'] - responses[element.j]['x'])
@@ -108,7 +108,7 @@ def get_ab_mats_assembly(responses: List[np.ndarray], parameters: dict, dof_inde
                     is_present = True
                     break
             if not is_present:
-                a_mat_assembly = np.hstack((a_mat_assembly, np.zeros((n_samples*(1+i_dof), 1))))
+                a_mat_assembly = np.hstack((a_mat_assembly, np.zeros((n_samples * (1 + i_dof), 1))))
                 a_mat_assembly[-n_samples:, -1] = a_mat_next[:, i_element_next]
                 elements_assembly.append(element_next)
     if solve_and_ret:
