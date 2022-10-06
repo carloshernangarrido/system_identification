@@ -21,6 +21,7 @@ def plot_residuals(force_sum: np.ndarray, inertia_term: np.ndarray, dofs_indices
     t_length = len(force_sum) // len(dofs_indices)
     t_ = np.linspace(0, t_length, t_length) if t is None else t
     fig, axs = plt.subplots(len(dofs_indices), 1, sharex='all', sharey='all')
+    i = 0
     for i in range(len(dofs_indices)):
         axs[i].plot(t_, force_sum[i * len(t_):(i + 1) * len(t_)], label='sum of forces')
         axs[i].plot(t_, inertia_term[i * len(t_):(i + 1) * len(t_)], label='inertial term')
@@ -32,3 +33,55 @@ def plot_residuals(force_sum: np.ndarray, inertia_term: np.ndarray, dofs_indices
         axs[i].set_xlabel('time (s)')
     axs[i].legend()
     return fig, axs
+
+
+def plot_fiting_chainlike(responses: list, parameters: dict):
+    figs = []
+    fig, axs = plt.subplots(1, len(responses)-1)
+    axs[0].set_ylabel('elastic force')
+    for i in range(len(responses)-1):
+        axs[i].set_title(f'DOFs {i} to {i+1}')
+        axs[i].set_xlabel('displacements')
+        displacements = responses[i + 1]['x'] - responses[i]['x']
+        try:
+            elastic_force_linear = displacements * parameters['unknown'][f'k_{i}_{i+1}']
+        except KeyError:
+            elastic_force_linear = displacements * 0
+        try:
+            elastic_force_quadratic = displacements**2 * parameters['unknown'][f'k2_{i}_{i + 1}']
+        except KeyError:
+            elastic_force_quadratic = displacements * 0
+        try:
+            elastic_force_cubic = displacements**3 * parameters['unknown'][f'k3_{i}_{i + 1}']
+        except KeyError:
+            elastic_force_cubic = displacements * 0
+        elastic_force_total = elastic_force_linear + elastic_force_quadratic + elastic_force_cubic
+        axs[i].plot(displacements, elastic_force_linear, label='linear', linewidth=0.5)
+        axs[i].plot(displacements, elastic_force_quadratic, label='quadratic', linewidth=0.5)
+        axs[i].plot(displacements, elastic_force_cubic, label='cubic', linewidth=0.5)
+        axs[i].plot(displacements, elastic_force_total, label='total', linewidth=2)
+        axs[i].tick_params(axis='both', which='both')
+        axs[i].grid('both')
+    axs[0].legend()
+    plt.tight_layout()
+    figs.append(fig)
+
+    fig, axs = plt.subplots(1, len(responses) - 1)
+    axs[0].set_ylabel('dissipative force')
+    for i in range(len(responses) - 1):
+        axs[i].set_title(f'DOFs {i} to {i + 1}')
+        axs[i].set_xlabel('velocities')
+        velocities = responses[i + 1]['x_dot'] - responses[i]['x_dot']
+        try:
+            dissipative_force_linear = velocities * parameters['unknown'][f'c_{i}_{i + 1}']
+        except KeyError:
+            dissipative_force_linear = velocities * 0
+        dissipative_force_total = dissipative_force_linear
+        axs[i].plot(velocities, dissipative_force_linear, label='linear', linewidth=0.5)
+        axs[i].plot(velocities, dissipative_force_total, label='total', linewidth=2)
+        axs[i].tick_params(axis='both', which='both')
+        axs[i].grid('both')
+    axs[0].legend()
+    plt.tight_layout()
+    figs.append(fig)
+    return figs

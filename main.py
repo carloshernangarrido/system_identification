@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from lumped_mass_sysid import get_ab_mats_assembly
-from plots import plot_residuals, plot_responses
+from plots import plot_residuals, plot_responses, plot_fiting_chainlike
 from utils import get_responses, get_mck_mats, Parameters
 import matplotlib.pyplot as plt
 
@@ -12,6 +12,10 @@ responses_full_filenames = [os.path.join(path, response_filename) for response_f
 flags = {'remove_mean': True,
          'fully_connected_k': False,
          'chain_like_k': True,
+         'fully_connected_k2': False,
+         'chain_like_k2': True,
+         'fully_connected_k3': False,
+         'chain_like_k3': True,
          'fully_connected_c': True,
          'chain_like_c': False,
          'fully_connected_b': False,
@@ -25,7 +29,9 @@ dof_masses = [steel_dens * (floor_vol + columns_vol), steel_dens * (floor_vol + 
 parameters = Parameters(dof_masses=dof_masses,
                         fully_connected_k=flags['fully_connected_k'], chain_like_k=flags['chain_like_k'],
                         fully_connected_c=flags['fully_connected_c'], chain_like_c=flags['chain_like_c'],
-                        fully_connected_b=flags['fully_connected_b'], chain_like_b=flags['chain_like_b']).parameters
+                        fully_connected_b=flags['fully_connected_b'], chain_like_b=flags['chain_like_b'],
+                        fully_connected_k2=flags['fully_connected_k2'], chain_like_k2=flags['chain_like_k2'],
+                        fully_connected_k3=flags['fully_connected_k3'], chain_like_k3=flags['chain_like_k3']).parameters
 
 print(parameters)
 
@@ -51,6 +57,7 @@ if __name__ == '__main__':
     # Plot residuals
     plot_residuals(force_sum=np.dot(a_mat, gamma_mat).reshape((-1,)), inertia_term=b_mat.reshape((-1,)),
                    dofs_indices=[1, 2], t=t)
+    plot_fiting_chainlike(responses=responses, parameters=parameters)
     plt.show()
 
     # Simulation
