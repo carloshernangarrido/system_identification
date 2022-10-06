@@ -63,5 +63,3 @@ if __name__ == '__main__':
     plot_fiting_chainlike(responses=responses, parameters=parameters)
     plt.show()
 
-    # Simulation
-    ...  # TODO
