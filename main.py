@@ -1,4 +1,5 @@
 import os
+import pprint as pp
 import numpy as np
 from lumped_mass_sysid import get_ab_mats_assembly
 from plots import plot_residuals, plot_responses, plot_fiting_chainlike
@@ -50,7 +51,7 @@ if __name__ == '__main__':
     dofs_indices = [1, 2]
     a_mat, b_mat, elements, gamma_mat, par_result = \
         get_ab_mats_assembly(responses, parameters, dofs_indices, solve_and_ret=True)
-    print([_.__str__() for _ in elements], '\n', par_result)
+    pp.pprint(par_result)
     m_mat, c_mat, k_mat = get_mck_mats(par_result)
     print(f"{m_mat=}, \n {c_mat=}, \n {k_mat=}")
     print("*** Raleigh hypothesis ***")
