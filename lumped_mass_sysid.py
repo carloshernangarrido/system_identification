@@ -57,8 +57,8 @@ def get_ab_mats(responses: List[np.ndarray], parameters: dict, dof_index: int, s
     velocity and acceleration, respectively. The first element in list [0] is the mass-irrelevant reference frame.
     :param parameters: Dict of 'known' and 'unknown' parameters of the
     system to identify. parameters['known'] must be 'm1', 'm2', and so on. parameters['unknown'] must be 'k_i_j' for
-    stiffness, c_i_j for damping coefficient, k2_i_j for quadratic stiffness, and k3_i_j for cubic stiffness between
-    dof i and dof j.
+    stiffness, c_i_j for damping coefficient, k2_i_j for quadratic stiffness, k3_i_j for cubic stiffness, and muN_i_j
+    for frictional dissipation between dof i and dof j.
     :returns: a_mat, b_mat np.ndarray s containing matrices A (a difference of
     responses in each column) and B (a column with the independent term). If ret_dof is True, a_mat, b_mat, dof are
     returned.

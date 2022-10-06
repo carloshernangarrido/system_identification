@@ -5,7 +5,7 @@ import numpy as np
 
 
 def check_element_type(element_type):
-    supported_element_types = ['b', 'c', 'k', 'k2', 'k3']
+    supported_element_types = ['b', 'c', 'k', 'k2', 'k3', 'muN']
     assert element_type in supported_element_types, f'Unsupported element type: {element_type}'
 
 
@@ -15,7 +15,8 @@ class Parameters:
                  fully_connected_c: bool = False, chain_like_c: bool = True,
                  fully_connected_b: bool = False, chain_like_b: bool = False,
                  fully_connected_k2: bool = False, chain_like_k2: bool = False,
-                 fully_connected_k3: bool = False, chain_like_k3: bool = False,):
+                 fully_connected_k3: bool = False, chain_like_k3: bool = False,
+                 fully_connected_muN: bool = False, chain_like_muN: bool = False):
         self.parameters = {'known': {}, 'unknown': {}}
         for i_dof, mass in enumerate(dof_masses):
             self.parameters['known'][f'm_{i_dof+1}'] = mass
@@ -39,6 +40,10 @@ class Parameters:
             self.fully_connected('k3')
         elif chain_like_k3:
             self.chain_like('k3')
+        if fully_connected_muN:
+            self.fully_connected('muN')
+        elif chain_like_muN:
+            self.chain_like('muN')
 
     def fully_connected(self, element_type):
         check_element_type(element_type)
