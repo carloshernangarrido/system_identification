@@ -24,14 +24,6 @@ class Parameters:
             self.fully_connected('k')
         elif chain_like_k:
             self.chain_like('k')
-        if fully_connected_c:
-            self.fully_connected('c')
-        elif chain_like_c:
-            self.chain_like('c')
-        if fully_connected_b:
-            self.fully_connected('b')
-        elif chain_like_b:
-            self.chain_like('b')
         if fully_connected_k2:
             self.fully_connected('k2')
         elif chain_like_k2:
@@ -40,10 +32,18 @@ class Parameters:
             self.fully_connected('k3')
         elif chain_like_k3:
             self.chain_like('k3')
+        if fully_connected_c:
+            self.fully_connected('c')
+        elif chain_like_c:
+            self.chain_like('c')
         if fully_connected_muN:
             self.fully_connected('muN')
         elif chain_like_muN:
             self.chain_like('muN')
+        if fully_connected_b:
+            self.fully_connected('b')
+        elif chain_like_b:
+            self.chain_like('b')
 
     def fully_connected(self, element_type):
         check_element_type(element_type)

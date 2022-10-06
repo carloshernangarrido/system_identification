@@ -16,8 +16,10 @@ flags = {'remove_mean': True,
          'chain_like_k2': True,
          'fully_connected_k3': False,
          'chain_like_k3': True,
-         'fully_connected_c': True,
-         'chain_like_c': False,
+         'fully_connected_c': False,
+         'chain_like_c': True,
+         'fully_connected_muN': False,
+         'chain_like_muN': True,
          'fully_connected_b': False,
          'chain_like_b': False}
 
@@ -28,10 +30,11 @@ dof_masses = [steel_dens * (floor_vol + columns_vol), steel_dens * (floor_vol + 
 
 parameters = Parameters(dof_masses=dof_masses,
                         fully_connected_k=flags['fully_connected_k'], chain_like_k=flags['chain_like_k'],
-                        fully_connected_c=flags['fully_connected_c'], chain_like_c=flags['chain_like_c'],
-                        fully_connected_b=flags['fully_connected_b'], chain_like_b=flags['chain_like_b'],
                         fully_connected_k2=flags['fully_connected_k2'], chain_like_k2=flags['chain_like_k2'],
-                        fully_connected_k3=flags['fully_connected_k3'], chain_like_k3=flags['chain_like_k3']).parameters
+                        fully_connected_k3=flags['fully_connected_k3'], chain_like_k3=flags['chain_like_k3'],
+                        fully_connected_c=flags['fully_connected_c'], chain_like_c=flags['chain_like_c'],
+                        fully_connected_muN=flags['fully_connected_muN'], chain_like_muN=flags['chain_like_muN'],
+                        fully_connected_b=flags['fully_connected_b'], chain_like_b=flags['chain_like_b']).parameters
 
 print(parameters)
 

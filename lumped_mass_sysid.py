@@ -79,6 +79,8 @@ def get_ab_mats(responses: List[np.ndarray], parameters: dict, dof_index: int, s
             a_columns.append((responses[dof.index]['x'] - responses[element.j]['x'])**2)
         elif element.element_type == 'k3':
             a_columns.append((responses[dof.index]['x'] - responses[element.j]['x'])**3)
+        elif element.element_type == 'muN':
+            a_columns.append(np.sign(responses[dof.index]['x_dot'] - responses[element.j]['x_dot']))
         else:
             raise ValueError(f'Unsupported element type: {element.element_type} in {dof}')
         a_columns[-1] = a_columns[-1].reshape(-1, 1)

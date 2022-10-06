@@ -26,12 +26,13 @@ def plot_residuals(force_sum: np.ndarray, inertia_term: np.ndarray, dofs_indices
         axs[i].plot(t_, force_sum[i * len(t_):(i + 1) * len(t_)], label='sum of forces')
         axs[i].plot(t_, inertia_term[i * len(t_):(i + 1) * len(t_)], label='inertial term')
         axs[i].set_ylabel(f'force (N) on DOF {dofs_indices[i]}')
-        axs[i].plot(t_, (force_sum - inertia_term)[i * len(t_):(i + 1) * len(t_)], label='error')
+        error = (force_sum - inertia_term)[i * len(t_):(i + 1) * len(t_)]
+        axs[i].plot(t_, error, label=f'error RMS={np.round(np.sqrt(np.mean(error ** 2)), 2)}')
+        axs[i].legend()
     if t is None:
         axs[i].set_xlabel('time (samples)')
     else:
         axs[i].set_xlabel('time (s)')
-    axs[i].legend()
     return fig, axs
 
 
@@ -56,10 +57,10 @@ def plot_fiting_chainlike(responses: list, parameters: dict):
         except KeyError:
             elastic_force_cubic = displacements * 0
         elastic_force_total = elastic_force_linear + elastic_force_quadratic + elastic_force_cubic
+        axs[i].plot(displacements, elastic_force_total, label='total', linewidth=2)
         axs[i].plot(displacements, elastic_force_linear, label='linear', linewidth=0.5)
         axs[i].plot(displacements, elastic_force_quadratic, label='quadratic', linewidth=0.5)
         axs[i].plot(displacements, elastic_force_cubic, label='cubic', linewidth=0.5)
-        axs[i].plot(displacements, elastic_force_total, label='total', linewidth=2)
         axs[i].tick_params(axis='both', which='both')
         axs[i].grid('both')
     axs[0].legend()
@@ -76,9 +77,14 @@ def plot_fiting_chainlike(responses: list, parameters: dict):
             dissipative_force_linear = velocities * parameters['unknown'][f'c_{i}_{i + 1}']
         except KeyError:
             dissipative_force_linear = velocities * 0
-        dissipative_force_total = dissipative_force_linear
-        axs[i].plot(velocities, dissipative_force_linear, label='linear', linewidth=0.5)
+        try:
+            dissipative_force_frictional = np.sign(velocities) * parameters['unknown'][f'muN_{i}_{i + 1}']
+        except KeyError:
+            dissipative_force_frictional = velocities * 0
+        dissipative_force_total = dissipative_force_linear + dissipative_force_frictional
         axs[i].plot(velocities, dissipative_force_total, label='total', linewidth=2)
+        axs[i].plot(velocities, dissipative_force_linear, label='linear', linewidth=0.5)
+        axs[i].plot(velocities, dissipative_force_frictional, label='frictional', linewidth=0.5)
         axs[i].tick_params(axis='both', which='both')
         axs[i].grid('both')
     axs[0].legend()
