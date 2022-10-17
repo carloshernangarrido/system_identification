@@ -66,18 +66,26 @@ def t2delta_t(t):
     return delta_t
 
 
-def get_responses(responses_full_filenames, generate_referenceframe, remove_mean, i_ini=0, i_fin=None):
+def get_responses(responses_full_filenames, generate_referenceframe, remove_mean, i_ini=0, i_fin=None,
+                  use_smoothed=False, max_disp=np.inf):
     responses = []
     t, delta_t = None, None
+    i_last_max_list = []
     for full_filename in responses_full_filenames:
         with open(full_filename, 'rb') as file:
             saving_list = pickle.load(file)
-            txy_smoothed = saving_list[2]
-        t = txy_smoothed[i_ini:i_fin, 0] if t is None else t
+            if use_smoothed:
+                txy = saving_list[2]
+            else:
+                txy = saving_list[1]
+        t = txy[i_ini:i_fin, 0] if t is None else t
         delta_t = t2delta_t(t) if delta_t is None else delta_t
-        x = txy_smoothed[i_ini:i_fin, 1] - txy_smoothed[i_ini:i_fin, 1].mean() if remove_mean else txy_smoothed[
-                                                                                                   i_ini:i_fin, 1]
+        x = txy[i_ini:i_fin, 1] - txy[i_ini:i_fin, 1].mean() if remove_mean else txy[i_ini:i_fin, 1]
         x = x.copy()
+        try:
+            i_last_max_list.append((np.where(np.abs(x) > max_disp))[0][-1])
+        except IndexError:
+            i_last_max_list.append(0)
         if generate_referenceframe:
             zeros = np.zeros(x[0:-2].size)
             responses.append({'x': zeros,
@@ -87,7 +95,12 @@ def get_responses(responses_full_filenames, generate_referenceframe, remove_mean
         responses.append({'x': x[0:-2],
                           'x_dot': np.diff(x[0:-1]) / delta_t,
                           'x_ddot': np.diff(x, 2) / (delta_t ** 2)})
-    return t[0:-2], responses
+    i_last_max = max(i_last_max_list)
+    for response in responses:
+        response['x'] = response['x'][i_last_max:]
+        response['x_dot'] = response['x_dot'][i_last_max:]
+        response['x_ddot'] = response['x_ddot'][i_last_max:]
+    return t[i_last_max:-2], responses
 
 
 def check_responses_integrity(responses, t=None):

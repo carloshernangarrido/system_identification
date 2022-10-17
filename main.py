@@ -2,13 +2,20 @@ import os
 import pprint as pp
 import numpy as np
 from lumped_mass_sysid import get_ab_mats_assembly
-from plots import plot_residuals, plot_responses, plot_fiting_chainlike
+from myplots import plot_residuals, plot_responses, plot_fiting_chainlike
 from utils import get_responses, get_mck_mats, Parameters
 import matplotlib.pyplot as plt
 
+case = '3'
 path = r''
-response_filenames = ['txy_dof1_m.dat',
-                      'txy_dof2_m.dat']
+response_filenames = [f'case_{case}_dof_1.dat',
+                      f'case_{case}_dof_2.dat']
+use_smoothed = True
+i_ini, i_fin = 10, None
+max_disp = .0025
+d_lim = .003  # m
+fe_lim = 45  # N
+
 responses_full_filenames = [os.path.join(path, response_filename) for response_filename in response_filenames]
 flags = {'remove_mean': True,
          'fully_connected_k': False,
@@ -20,14 +27,15 @@ flags = {'remove_mean': True,
          'fully_connected_c': False,
          'chain_like_c': True,
          'fully_connected_muN': False,
-         'chain_like_muN': True,
+         'chain_like_muN': False,
          'fully_connected_b': False,
          'chain_like_b': False}
 
 steel_dens = 7800
 floor_vol = 3099962 / (1000 ** 3)
 columns_vol = 318713 / (1000 ** 3)
-dof_masses = [steel_dens * (floor_vol + columns_vol), steel_dens * (floor_vol + (0.5 * columns_vol))]
+plate_vol = 18.7 / steel_dens
+dof_masses = [steel_dens * (floor_vol + columns_vol - plate_vol), steel_dens * (floor_vol + (0.5 * columns_vol))]
 
 parameters = Parameters(dof_masses=dof_masses,
                         fully_connected_k=flags['fully_connected_k'], chain_like_k=flags['chain_like_k'],
@@ -41,10 +49,9 @@ print(parameters)
 
 if __name__ == '__main__':
     #  Read responses assumed as positions
-    i_ini, i_fin = 10, None
     t, responses = get_responses(responses_full_filenames,
                                  generate_referenceframe=True, remove_mean=flags['remove_mean'],
-                                 i_ini=100, i_fin=None)
+                                 i_ini=i_ini, i_fin=i_fin, use_smoothed=use_smoothed, max_disp=max_disp)
     plot_responses(t, responses)
 
     # Estimate parameters:
@@ -61,6 +68,7 @@ if __name__ == '__main__':
     # Plot residuals
     plot_residuals(force_sum=np.dot(a_mat, gamma_mat).reshape((-1,)), inertia_term=b_mat.reshape((-1,)),
                    dofs_indices=[1, 2], t=t)
-    plot_fiting_chainlike(responses=responses, parameters=parameters)
+    figs = plot_fiting_chainlike(responses=responses, parameters=parameters, d_lim=d_lim, fe_lim=fe_lim)
+    figs[0].savefig(f'case_{case}.pdf')
     plt.show()
 

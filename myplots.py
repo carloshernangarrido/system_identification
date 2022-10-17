@@ -36,7 +36,7 @@ def plot_residuals(force_sum: np.ndarray, inertia_term: np.ndarray, dofs_indices
     return fig, axs
 
 
-def plot_fiting_chainlike(responses: list, parameters: dict):
+def plot_fiting_chainlike(responses: list, parameters: dict, d_lim=0, v_lim=0, fe_lim=0):
     figs = []
     fig, axs = plt.subplots(1, len(responses)-1)
     axs[0].set_ylabel('elastic force')
@@ -63,6 +63,10 @@ def plot_fiting_chainlike(responses: list, parameters: dict):
         axs[i].plot(displacements, elastic_force_cubic, label='cubic', linewidth=0.5)
         axs[i].tick_params(axis='both', which='both')
         axs[i].grid('both')
+        if d_lim > 0:
+            axs[i].set_xlim((-d_lim, d_lim))
+        if fe_lim > 0:
+            axs[i].set_ylim((-fe_lim, fe_lim))
     axs[0].legend()
     plt.tight_layout()
     figs.append(fig)
@@ -87,6 +91,8 @@ def plot_fiting_chainlike(responses: list, parameters: dict):
         axs[i].plot(velocities, dissipative_force_frictional, label='frictional', linewidth=0.5)
         axs[i].tick_params(axis='both', which='both')
         axs[i].grid('both')
+        if v_lim > 0:
+            axs[i].set_xlim((-v_lim, v_lim))
     axs[0].legend()
     plt.tight_layout()
     figs.append(fig)
