@@ -6,13 +6,16 @@ from myplots import plot_residuals, plot_responses, plot_fiting_chainlike
 from utils import get_responses, get_mck_mats, Parameters
 import matplotlib.pyplot as plt
 
-case = '3'
-path = r''
-response_filenames = [f'case_{case}_dof_1.dat',
-                      f'case_{case}_dof_2.dat']
+case = '15'
+path = r'C:\Users\joses\Mi unidad\TRABAJO\46_cm_inerter\TRABAJO\experimental\ensayos\Campañas\2 - free vibrations\object_tracking'
+response_filenames = [f'case_{case}_dof1_m.dat',
+                      f'case_{case}_dof2_m.dat']
 use_smoothed = True
-i_ini, i_fin = 10, None
-max_disp = .0025
+i_ini, i_fin = 0, None
+max_disp = .015
+dofs_indices = [1, 2]
+
+# Plot parameters
 d_lim = .003  # m
 fe_lim = 45  # N
 
@@ -21,21 +24,17 @@ flags = {'remove_mean': True,
          'fully_connected_k': False,
          'chain_like_k': True,
          'fully_connected_k2': False,
-         'chain_like_k2': True,
+         'chain_like_k2': False,
          'fully_connected_k3': False,
-         'chain_like_k3': True,
-         'fully_connected_c': False,
-         'chain_like_c': True,
+         'chain_like_k3': False,
+         'fully_connected_c': True,
+         'chain_like_c': False,
          'fully_connected_muN': False,
          'chain_like_muN': False,
          'fully_connected_b': False,
          'chain_like_b': False}
 
-steel_dens = 7800
-floor_vol = 3099962 / (1000 ** 3)
-columns_vol = 318713 / (1000 ** 3)
-plate_vol = 18.7 / steel_dens
-dof_masses = [steel_dens * (floor_vol + columns_vol - plate_vol), steel_dens * (floor_vol + (0.5 * columns_vol))]
+dof_masses = [32.37, 26.007]
 
 parameters = Parameters(dof_masses=dof_masses,
                         fully_connected_k=flags['fully_connected_k'], chain_like_k=flags['chain_like_k'],
@@ -53,9 +52,17 @@ if __name__ == '__main__':
                                  generate_referenceframe=True, remove_mean=flags['remove_mean'],
                                  i_ini=i_ini, i_fin=i_fin, use_smoothed=use_smoothed, max_disp=max_disp)
     plot_responses(t, responses)
+    for i, response in enumerate(responses):
+        file = open(f"output_{i}.txt", "w")
+        for item in response['x']:
+            print(item, file=file, flush=True)
+        file.close()
+        file = open(f"output_time.txt", "w")
+        for item in t:
+            print(item, file=file, flush=True)
+        file.close()
 
     # Estimate parameters:
-    dofs_indices = [1, 2]
     a_mat, b_mat, elements, gamma_mat, par_result = \
         get_ab_mats_assembly(responses, parameters, dofs_indices, solve_and_ret=True)
     pp.pprint(par_result)
@@ -67,7 +74,7 @@ if __name__ == '__main__':
 
     # Plot residuals
     plot_residuals(force_sum=np.dot(a_mat, gamma_mat).reshape((-1,)), inertia_term=b_mat.reshape((-1,)),
-                   dofs_indices=[1, 2], t=t)
+                   dofs_indices=dofs_indices, t=t)
     figs = plot_fiting_chainlike(responses=responses, parameters=parameters, d_lim=d_lim, fe_lim=fe_lim)
     figs[0].savefig(f'case_{case}.pdf')
     plt.show()

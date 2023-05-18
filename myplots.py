@@ -21,6 +21,10 @@ def plot_residuals(force_sum: np.ndarray, inertia_term: np.ndarray, dofs_indices
     t_length = len(force_sum) // len(dofs_indices)
     t_ = np.linspace(0, t_length, t_length) if t is None else t
     fig, axs = plt.subplots(len(dofs_indices), 1, sharex='all', sharey='all')
+    try:
+        axs[0]
+    except TypeError:
+        axs = [axs]
     i = 0
     for i in range(len(dofs_indices)):
         axs[i].plot(t_, force_sum[i * len(t_):(i + 1) * len(t_)], label='sum of forces')
